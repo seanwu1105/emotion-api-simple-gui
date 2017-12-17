@@ -41,7 +41,7 @@ class ResultImg(Frame):
                                                                lw=2,
                                                                color='orange')))
             self.ax.annotate(curr_emotion,
-                             xy=(face_rect['left'], face_rect['top'] - 10),
-                             color='orange',
-                             bbox=dict(boxstyle='round, pad=0.3', lw=1))
+                             xy=(face_rect['left'], face_rect['top'] - 15),
+                             color='black',
+                             bbox=dict(boxstyle="round", fc="w", lw=0, alpha=0.6))
         self.canvas.show()
