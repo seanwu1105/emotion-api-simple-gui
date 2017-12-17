@@ -4,10 +4,11 @@
 """
 
 from gui import GUIRoot
+from request_emotion import RequestEmotion
 
 def main():
     """The main function."""
-    gui_root = GUIRoot()
+    gui_root = GUIRoot(RequestEmotion)
     gui_root.mainloop()
 
 if __name__ == '__main__':

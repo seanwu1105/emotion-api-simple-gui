@@ -1,20 +1,22 @@
 """Define the GUI interface."""
 
-from tkinter import Button, Entry, Radiobutton, Tk, Label, LabelFrame, StringVar, N, S, W, E
+from tkinter import Button, Entry, Radiobutton, Tk, Label, LabelFrame, StringVar, N, S, W, E, END
 from tkinter.scrolledtext import ScrolledText
+from mpl import ResultImg
 
 class GUIRoot(Tk):
     """The tkinter GUI root class."""
-    def __init__(self):
+    def __init__(self, thread_cls):
         super().__init__()
+        self.thread_cls = thread_cls
         self.title("Emotion API")
         self.grid()
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=2)
-        self.grid_rowconfigure(3, weight=1)
+        self.grid_rowconfigure(4, weight=1)
 
         # Create LabelFrames
-        lf_key = LabelFrame(self, text="Key")
+        lf_key = LabelFrame(self, text="Emotion API Key")
         lf_key.grid(row=0, column=0, columnspan=1, sticky=W+E, padx=5, pady=3)
         lf_key.grid_columnconfigure(0, weight=1)
         lf_mode = LabelFrame(self, text="Mode")
@@ -25,16 +27,21 @@ class GUIRoot(Tk):
         self.lf_source.grid(row=2, column=0, columnspan=1, sticky=W+E, padx=5, pady=3)
         self.lf_source.rowconfigure(0, weight=1)
         self.lf_source.grid_propagate(False)
+        lf_request = LabelFrame(self, text="Request Result")
+        lf_request.grid(row=3, column=0, columnspan=1, sticky=W+E, padx=5, pady=3)
+        lf_request.grid_columnconfigure(0, weight=1)
         lf_console = LabelFrame(self, text="Console")
-        lf_console.grid(row=3, column=0, columnspan=1, sticky=N+S+W+E, padx=5, pady=3)
+        lf_console.grid(row=4, column=0, columnspan=1, sticky=N+S+W+E, padx=5, pady=3)
         lf_console.grid_columnconfigure(0, weight=1)
         lf_console.grid_rowconfigure(0, weight=1)
         lf_img = LabelFrame(self, text="Output Image")
-        lf_img.grid(row=0, column=2, rowspan=2)
+        lf_img.grid(row=0, column=1, rowspan=5, sticky=N+S+W+E)
+        lf_img.grid_columnconfigure(0, weight=1)
+        lf_img.grid_rowconfigure(0, weight=1)
 
         # Create Input Fields
-        ety_key = Entry(lf_key)
-        ety_key.grid(sticky=W+E)
+        self.ety_key = Entry(lf_key)
+        self.ety_key.grid(sticky=W+E, padx=3)
         self.var_mode = StringVar()
         Radiobutton(lf_mode,
                     text="Local Image",
@@ -55,10 +62,17 @@ class GUIRoot(Tk):
         # set default mode: local raw image
         self.var_mode.set('local')
         self.change_mode()
+        # request btn
+        btn_request = Button(lf_request, text="Request Result", command=self.request)
+        btn_request.grid(sticky=W+E)
 
         # Create Output Console
-        console = ScrolledText(lf_console, state='disable', width=30)
-        console.grid(sticky=N+S+W+E)
+        self.console = ScrolledText(lf_console, state='disable', width=30)
+        self.console.grid(sticky=N+S+W+E)
+
+        # Create Output Image
+        self.plot = ResultImg(lf_img)
+        self.plot.grid(sticky=N+S+W+E)
 
     def change_mode(self):
         """Change the image source mode."""
@@ -75,4 +89,19 @@ class GUIRoot(Tk):
             self.lb_filename.grid_forget()
             self.btn_fileopen.grid_forget()
             self.lb_url.grid(row=0, column=0)
-            self.ety_url.grid(row=0, column=1, sticky=W+E)
+            self.ety_url.grid(row=0, column=1, sticky=W+E, padx=3)
+
+    def request(self):
+        """Create the requesting thread to request the result from Emotion API."""
+        self.thread_cls(self.ety_key.get(),
+                        self.var_mode.get(),
+                        "SOURCE",
+                        self.plot,
+                        self.print_console).start()
+
+    def print_console(self, input_str):
+        """Print the text on the conolse."""
+        self.console.config(state='normal')
+        self.console.insert(END, "{}\n".format(input_str))
+        self.console.config(state='disable')
+        self.console.see(END)
