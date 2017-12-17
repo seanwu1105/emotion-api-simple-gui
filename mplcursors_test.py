@@ -1,14 +1,18 @@
+import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle
 import mplcursors
 
+x = np.linspace(0, 10, 100)
+
 fig, ax = plt.subplots()
+ax.set_title("Click on a line to display its label")
 
-rtgs = []
-for i in range(4):
-    rtgs.append(ax.add_patch(Rectangle((i/10 + 0.1, i/10 + 0.1), 0.2, 0.2, ec='black', label=i)))
-c = mplcursors.cursor(rtgs, hover=True)
+# Plot a series of lines with increasing slopes.
+for i in range(1, 20):
+    ax.plot(x, i * x, label="$y = {}x$".format(i))
 
-c.connect("add", lambda sel: sel.annotation.set_text(sel.artist.get_label()))
+# Use a Cursor to interactively display the label for a selected line.
+mplcursors.cursor(ax, hover=True).connect(
+    "add", lambda sel: sel.annotation.set_text(sel.artist.get_label()))
 
 plt.show()

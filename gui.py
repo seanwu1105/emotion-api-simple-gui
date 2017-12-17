@@ -1,7 +1,9 @@
 """Define the GUI interface."""
 
 from tkinter import Button, Entry, Radiobutton, Tk, Label, LabelFrame, StringVar, N, S, W, E, END
+from tkinter.filedialog import askopenfilename
 from tkinter.scrolledtext import ScrolledText
+from matplotlib.image import imread
 from mpl import ResultImg
 
 class GUIRoot(Tk):
@@ -9,6 +11,7 @@ class GUIRoot(Tk):
     def __init__(self, thread_cls):
         super().__init__()
         self.thread_cls = thread_cls
+        self.filename = None
         self.title("Emotion API")
         self.grid()
         self.grid_columnconfigure(0, weight=1)
@@ -41,6 +44,7 @@ class GUIRoot(Tk):
 
         # Create Input Fields
         self.ety_key = Entry(lf_key)
+        self.ety_key.insert(END, "bfe9b2f471e04b29a8fabfe3dd9f647d")
         self.ety_key.grid(sticky=W+E, padx=3)
         self.var_mode = StringVar()
         Radiobutton(lf_mode,
@@ -55,7 +59,7 @@ class GUIRoot(Tk):
                     command=self.change_mode).grid(row=1, column=1)
         # Local Image Source
         self.lb_filename = Label(self.lf_source, text="..")
-        self.btn_fileopen = Button(self.lf_source, text="Open..")
+        self.btn_fileopen = Button(self.lf_source, text="Open..", command=self.open_img)
         # URL Image Source
         self.lb_url = Label(self.lf_source, text="URL")
         self.ety_url = Entry(self.lf_source)
@@ -63,8 +67,11 @@ class GUIRoot(Tk):
         self.var_mode.set('local')
         self.change_mode()
         # request btn
-        btn_request = Button(lf_request, text="Request Result", command=self.request)
-        btn_request.grid(sticky=W+E)
+        self.btn_request = Button(lf_request,
+                                  text="Request Result",
+                                  command=self.run_request,
+                                  state='disable')
+        self.btn_request.grid(sticky=W+E)
 
         # Create Output Console
         self.console = ScrolledText(lf_console, state='disable', width=30)
@@ -91,13 +98,29 @@ class GUIRoot(Tk):
             self.lb_url.grid(row=0, column=0)
             self.ety_url.grid(row=0, column=1, sticky=W+E, padx=3)
 
-    def request(self):
+    def run_request(self):
         """Create the requesting thread to request the result from Emotion API."""
+        source = self.filename if self.var_mode.get() == 'local' else self.ety_url.get()
         self.thread_cls(self.ety_key.get(),
                         self.var_mode.get(),
-                        "SOURCE",
+                        source,
                         self.plot,
                         self.print_console).start()
+
+    def open_img(self):
+        """ Open the dialog let user to choose test file and get the test data. """
+        max_name_len = 18
+        self.filename = askopenfilename(filetypes=(("JPEG", "*.jpg"),
+                                                   ("PNG", "*.png"),
+                                                   ("All Files", "*.*")),
+                                        title="Choose an Image")
+        if self.filename:
+            self.plot.imshow(imread(self.filename))
+            self.btn_request.config(state='normal')
+            if len(self.filename) > max_name_len:
+                self.lb_filename.config(text=".."+self.filename[-max_name_len:])
+            else:
+                self.lb_filename.config(text=self.filename)
 
     def print_console(self, input_str):
         """Print the text on the conolse."""

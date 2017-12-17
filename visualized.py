@@ -113,7 +113,7 @@ def renderResultOnImage( result, img ):
 
 # Load raw image file into memory
 
-with open( 'Group2016.jpg', 'rb' ) as f:
+with open( 't1.png', 'rb' ) as f:
     data = f.read()
 
 headers = dict()

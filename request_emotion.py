@@ -1,8 +1,8 @@
 """Define the thread of requesting the result from Emotion API."""
 
+import time
 from threading import Thread
-import cv2
-import numpy as np
+import requests
 
 class RequestEmotion(Thread):
     """The class to request result from Emotion API."""
@@ -32,9 +32,60 @@ class RequestEmotion(Thread):
         self.plot = plot
         self.print = print_func
     def run(self):
-        with open('Group2016.jpg', 'rb') as f:
-            data = f.read()
-        data8uint = np.fromstring(data, np.uint8) # Convert string to an unsigned int array
-        img = cv2.cvtColor(cv2.imdecode(data8uint, cv2.IMREAD_COLOR), cv2.COLOR_BGR2RGB)
-        self.plot.imshow(img)
-        self.print("FUCK!")
+        headers = dict()
+        headers['Ocp-Apim-Subscription-Key'] = self.key
+        if self.mode == 'local':
+            with open(self.source, 'rb') as f:
+                data = f.read()
+            headers['Content-Type'] = 'application/octet-stream'
+            json, params = None, None
+            result = self.process_request(json, data, headers, params)
+            self.print(result)
+            self.plot.draw_labels(result)
+
+    def process_request(self, json, data, headers, params):
+        """Request the API server.
+
+        Parameters:
+        -----------
+        json: Used when processing images from its URL. See API Documentation
+        data: Used when processing image read from disk. See API Documentation
+        headers: Used to pass the key information and the data type request
+        """
+
+        max_retries_times = 10
+        retries = 0
+        result = None
+
+        while True:
+            url = 'https://westus.api.cognitive.microsoft.com/emotion/v1.0/recognize'
+            self.print("Set {} as the API request URL.".format(url))
+            self.print("Waiting for the response...")
+            response = requests.request('post',
+                                        url,
+                                        json=json,
+                                        data=data,
+                                        headers=headers,
+                                        params=params)
+            if response.status_code == 429:
+                self.print("Message: {}".format(response.json()['error']['message']))
+                if retries <= max_retries_times:
+                    time.sleep(1)
+                    retries += 1
+                    continue
+                else:
+                    self.print("Error: failed after retrying.")
+                    break
+            elif response.status_code == 200 or response.status_code == 201:
+                if 'content-length' in response.headers and int(response.headers['content-length']) == 0:
+                    result = None
+                elif 'content-type' in response.headers and isinstance(response.headers['content-type'], str):
+                    if 'application/json' in response.headers['content-type'].lower():
+                        result = response.json() if response.content else None
+                    elif 'image' in response.headers['content-type'].lower():
+                        result = response.content
+            else:
+                self.print("Error code: {}".format(response.status_code))
+                self.print("Message: {}".format(response.json()['error']['message']))
+            break
+        return result
