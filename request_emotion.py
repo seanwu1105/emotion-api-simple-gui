@@ -34,18 +34,18 @@ class RequestEmotion(Thread):
     def run(self):
         headers = dict()
         headers['Ocp-Apim-Subscription-Key'] = self.key
-        if self.mode == 'local':
-            with open(self.source, 'rb') as f:
-                data = f.read()
-            headers['Content-Type'] = 'application/octet-stream'
-            json, params = None, None
-        else:
+        if self.mode == 'url':
             headers['Content-Type'] = 'application/json'
             json = {'url': self.source}
             data, params = None, None
+        else:
+            data = self.source
+            headers['Content-Type'] = 'application/octet-stream'
+            json, params = None, None
         result = self.process_request(json, data, headers, params)
-        self.print(result)
-        self.plot.draw_labels(result)
+        if result:
+            self.print(result)
+            self.plot.draw_labels(result)
 
     def process_request(self, json, data, headers, params):
         """Request the API server.
