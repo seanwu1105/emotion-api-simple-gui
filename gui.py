@@ -82,7 +82,7 @@ class GUIRoot(Tk):
         self.btn_request.grid(sticky=W+E)
 
         # Create Output Console
-        self.console = ScrolledText(lf_console, state='disable', width=35)
+        self.console = ScrolledText(lf_console, state='disable', width=35, bg='gray6', fg='white')
         self.console.grid(sticky=N+S+W+E)
 
         # Create Output Image
@@ -122,6 +122,7 @@ class GUIRoot(Tk):
                                         title="Choose an Image")
         if self.filename:
             self.plot.imshow(imread(self.filename))
+            self.print_console("Open a local raw image file.")
             self.btn_request.config(state='normal')
             if len(self.filename) > max_name_len:
                 self.lb_filename.config(text=".."+self.filename[-max_name_len:])
@@ -135,6 +136,7 @@ class GUIRoot(Tk):
         except Exception as e:
             self.print_console(e.args)
         else:
+            self.print_console("Open a online image from URL.")
             self.btn_request.config(state='normal')
 
     def print_console(self, input_str):
