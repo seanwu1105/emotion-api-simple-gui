@@ -3,7 +3,10 @@
 from tkinter import Button, Entry, Radiobutton, Tk, Label, LabelFrame, StringVar, N, S, W, E, END
 from tkinter.filedialog import askopenfilename
 from tkinter.scrolledtext import ScrolledText
+import requests
 from matplotlib.image import imread
+from PIL import Image
+from io import BytesIO
 from mpl import ResultImg
 
 class GUIRoot(Tk):
@@ -26,10 +29,13 @@ class GUIRoot(Tk):
         lf_mode.grid(row=1, column=0, columnspan=1, sticky=W+E, padx=5, pady=3)
         for i in range(2):
             lf_mode.grid_columnconfigure(i, weight=1)
-        self.lf_source = LabelFrame(self, text="Image Source", height=50)
-        self.lf_source.grid(row=2, column=0, columnspan=1, sticky=W+E, padx=5, pady=3)
-        self.lf_source.rowconfigure(0, weight=1)
-        self.lf_source.grid_propagate(False)
+        lf_source = LabelFrame(self, text="Image Source", height=50)
+        lf_source.grid(row=2, column=0, columnspan=1, sticky=W+E, padx=5, pady=3)
+        lf_source.rowconfigure(0, weight=1)
+        lf_source.grid_propagate(False)
+        lf_source.columnconfigure(0, weight=1)
+        lf_source.columnconfigure(1, weight=5)
+        lf_source.columnconfigure(2, weight=1)
         lf_request = LabelFrame(self, text="Request Result")
         lf_request.grid(row=3, column=0, columnspan=1, sticky=W+E, padx=5, pady=3)
         lf_request.grid_columnconfigure(0, weight=1)
@@ -58,11 +64,13 @@ class GUIRoot(Tk):
                     value='url',
                     command=self.change_mode).grid(row=1, column=1)
         # Local Image Source
-        self.lb_filename = Label(self.lf_source, text="..")
-        self.btn_fileopen = Button(self.lf_source, text="Open..", command=self.open_img)
+        self.lb_filename = Label(lf_source, text="..")
+        self.btn_fileopen = Button(lf_source, text="Open..", command=self.open_img)
         # URL Image Source
-        self.lb_url = Label(self.lf_source, text="URL")
-        self.ety_url = Entry(self.lf_source)
+        self.lb_url = Label(lf_source, text="URL")
+        self.ety_url = Entry(lf_source)
+        self.ety_url.insert(END, "https://i.imgflip.com/qiev6.jpg")
+        self.btn_url = Button(lf_source, text="Get Image", command=self.get_img)
         # set default mode: local raw image
         self.var_mode.set('local')
         self.change_mode()
@@ -74,7 +82,7 @@ class GUIRoot(Tk):
         self.btn_request.grid(sticky=W+E)
 
         # Create Output Console
-        self.console = ScrolledText(lf_console, state='disable', width=30)
+        self.console = ScrolledText(lf_console, state='disable', width=35)
         self.console.grid(sticky=N+S+W+E)
 
         # Create Output Image
@@ -84,19 +92,17 @@ class GUIRoot(Tk):
     def change_mode(self):
         """Change the image source mode."""
         if self.var_mode.get() == 'local':
-            self.lf_source.columnconfigure(0, weight=6)
-            self.lf_source.columnconfigure(1, weight=1)
-            self.lb_filename.grid(row=0, column=0)
-            self.btn_fileopen.grid(row=0, column=1)
+            self.lb_filename.grid(row=0, column=0, columnspan=2)
+            self.btn_fileopen.grid(row=0, column=2)
             self.lb_url.grid_forget()
             self.ety_url.grid_forget()
+            self.btn_url.grid_forget()
         else:
-            self.lf_source.columnconfigure(0, weight=1)
-            self.lf_source.columnconfigure(1, weight=3)
             self.lb_filename.grid_forget()
             self.btn_fileopen.grid_forget()
             self.lb_url.grid(row=0, column=0)
             self.ety_url.grid(row=0, column=1, sticky=W+E, padx=3)
+            self.btn_url.grid(row=0, column=2)
 
     def run_request(self):
         """Create the requesting thread to request the result from Emotion API."""
@@ -108,8 +114,8 @@ class GUIRoot(Tk):
                         self.print_console).start()
 
     def open_img(self):
-        """ Open the dialog let user to choose test file and get the test data. """
-        max_name_len = 18
+        """Open the dialog let user to choose test file and get the test data."""
+        max_name_len = 20
         self.filename = askopenfilename(filetypes=(("JPEG", "*.jpg"),
                                                    ("PNG", "*.png"),
                                                    ("All Files", "*.*")),
@@ -121,6 +127,15 @@ class GUIRoot(Tk):
                 self.lb_filename.config(text=".."+self.filename[-max_name_len:])
             else:
                 self.lb_filename.config(text=self.filename)
+
+    def get_img(self):
+        """Get the image from the given URL."""
+        try:
+            self.plot.imshow(Image.open(BytesIO(requests.get(self.ety_url.get()).content)))
+        except Exception as e:
+            self.print_console(e.args)
+        else:
+            self.btn_request.config(state='normal')
 
     def print_console(self, input_str):
         """Print the text on the conolse."""

@@ -39,9 +39,13 @@ class RequestEmotion(Thread):
                 data = f.read()
             headers['Content-Type'] = 'application/octet-stream'
             json, params = None, None
-            result = self.process_request(json, data, headers, params)
-            self.print(result)
-            self.plot.draw_labels(result)
+        else:
+            headers['Content-Type'] = 'application/json'
+            json = {'url': self.source}
+            data, params = None, None
+        result = self.process_request(json, data, headers, params)
+        self.print(result)
+        self.plot.draw_labels(result)
 
     def process_request(self, json, data, headers, params):
         """Request the API server.
