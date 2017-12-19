@@ -90,7 +90,7 @@ class GUIRoot(Tk):
         self.btn_request.grid(sticky=W+E)
 
         # Create Output Console
-        self.console = ScrolledText(lf_console, state='disable', width=60, bg='gray6', fg='white')
+        self.console = ScrolledText(lf_console, state='disable', width=60, bg='gray20', fg='white')
         self.console.grid(sticky=N+S+W+E)
 
         # Create Output Image
