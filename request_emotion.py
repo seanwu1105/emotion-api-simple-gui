@@ -46,6 +46,8 @@ class RequestEmotion(Thread):
         if result:
             self.print(result)
             self.plot.draw_labels(result)
+        else:
+            self.print("Error: No result in API response.")
 
     def process_request(self, json, data, headers, params):
         """Request the API server.
