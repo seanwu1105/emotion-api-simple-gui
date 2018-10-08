@@ -1,2 +1,2 @@
 [MASTER]
-extension-pkg-whitelist=numpy, cv2
+extension-pkg-whitelist=cv2
