@@ -8,10 +8,12 @@ import cv2
 import requests
 import numpy as np
 from PIL import Image
-from mpl import ResultImg
+from .mpl import ResultImg
+
 
 class GUIRoot(Tk):
     """The tkinter GUI root class."""
+
     def __init__(self, thread_cls):
         super().__init__()
         self.thread_cls = thread_cls
@@ -31,17 +33,20 @@ class GUIRoot(Tk):
         for i in range(3):
             lf_mode.grid_columnconfigure(i, weight=1)
         lf_source = LabelFrame(self, text="Image Source", height=50)
-        lf_source.grid(row=2, column=0, columnspan=1, sticky=W+E, padx=5, pady=3)
+        lf_source.grid(row=2, column=0, columnspan=1,
+                       sticky=W+E, padx=5, pady=3)
         lf_source.rowconfigure(0, weight=1)
         lf_source.grid_propagate(False)
         lf_source.columnconfigure(0, weight=1)
         lf_source.columnconfigure(1, weight=5)
         lf_source.columnconfigure(2, weight=1)
         lf_request = LabelFrame(self, text="Request Result")
-        lf_request.grid(row=3, column=0, columnspan=1, sticky=W+E, padx=5, pady=3)
+        lf_request.grid(row=3, column=0, columnspan=1,
+                        sticky=W+E, padx=5, pady=3)
         lf_request.grid_columnconfigure(0, weight=1)
         lf_console = LabelFrame(self, text="Console")
-        lf_console.grid(row=4, column=0, columnspan=1, sticky=N+S+W+E, padx=5, pady=3)
+        lf_console.grid(row=4, column=0, columnspan=1,
+                        sticky=N+S+W+E, padx=5, pady=3)
         lf_console.grid_columnconfigure(0, weight=1)
         lf_console.grid_rowconfigure(0, weight=1)
         lf_img = LabelFrame(self, text="Output Image")
@@ -71,14 +76,17 @@ class GUIRoot(Tk):
                     command=self.change_mode).grid(row=1, column=2)
         # Local Image Source
         self.lb_filename = Label(lf_source, text="..")
-        self.btn_fileopen = Button(lf_source, text="Open..", command=self.get_local_img)
+        self.btn_fileopen = Button(
+            lf_source, text="Open..", command=self.get_local_img)
         # URL Image Source
         self.lb_url = Label(lf_source, text="URL")
         self.ety_url = Entry(lf_source)
         self.ety_url.insert(END, "https://i.imgflip.com/qiev6.jpg")
-        self.btn_url = Button(lf_source, text="Get Image", command=self.get_url_img)
+        self.btn_url = Button(lf_source, text="Get Image",
+                              command=self.get_url_img)
         # Camera Image Source
-        self.btn_get_cam = Button(lf_source, text="Get the Camera Image", command=self.get_cam_img)
+        self.btn_get_cam = Button(
+            lf_source, text="Get the Camera Image", command=self.get_cam_img)
         # set default mode: local raw image
         self.var_mode.set('local')
         self.change_mode()
@@ -90,7 +98,8 @@ class GUIRoot(Tk):
         self.btn_request.grid(sticky=W+E)
 
         # Create Output Console
-        self.console = ScrolledText(lf_console, state='disable', width=60, bg='gray20', fg='white')
+        self.console = ScrolledText(
+            lf_console, state='disable', width=60, bg='gray20', fg='white')
         self.console.grid(sticky=N+S+W+E)
 
         # Create Output Image
@@ -134,9 +143,9 @@ class GUIRoot(Tk):
         """Open the dialog let user to choose test file and get the test data."""
         max_name_len = 20
         filename = askopenfilename(filetypes=(("JPEG", "*.jpg"),
-                                                   ("PNG", "*.png"),
-                                                   ("All Files", "*.*")),
-                                        title="Choose an Image")
+                                              ("PNG", "*.png"),
+                                              ("All Files", "*.*")),
+                                   title="Choose an Image")
         if filename:
             with open(filename, 'rb') as f:
                 self.img = f.read()
@@ -151,7 +160,8 @@ class GUIRoot(Tk):
     def get_url_img(self):
         """Get the image from the given URL."""
         try:
-            self.plot.imshow(Image.open(BytesIO(requests.get(self.ety_url.get()).content)))
+            self.plot.imshow(Image.open(
+                BytesIO(requests.get(self.ety_url.get()).content)))
         except Exception as e:
             self.print_console(e.args)
         else:
@@ -175,7 +185,9 @@ class GUIRoot(Tk):
         self.console.config(state='disable')
         self.console.see(END)
 
+
 def img_decode(data):
     """Convert the image codec from OpenCV to matplotlib readable."""
-    data8uint = np.fromstring(data, np.uint8) # Convert string to an unsigned int array
+    data8uint = np.fromstring(
+        data, np.uint8)  # Convert string to an unsigned int array
     return cv2.cvtColor(cv2.imdecode(data8uint, cv2.IMREAD_COLOR), cv2.COLOR_BGR2RGB)
