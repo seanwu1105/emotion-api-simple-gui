@@ -1,6 +1,6 @@
 # Emotion API Simple GUI
 
-[![Requirements Status](https://requires.io/github/GLaDOS1105/emotion-api-simple-gui/requirements.svg?branch=master)](https://requires.io/github/GLaDOS1105/emotion-api-simple-gui/requirements/?branch=master)
+[![Requirements Status](https://requires.io/github/seanwu1105/emotion-api-simple-gui/requirements.svg?branch=master)](https://requires.io/github/seanwu1105/emotion-api-simple-gui/requirements/?branch=master)
 
 A simple GUI for [Microsoft Emotion API](https://azure.microsoft.com/en-us/services/cognitive-services/emotion/) testing.
 
